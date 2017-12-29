@@ -3,10 +3,11 @@ package de.hm.cs.netze1;
 import java.util.zip.Adler32;
 
 public class Package {
-	private byte flags;
-	private byte[] payload;
-	private int sequenceNumber;
-	private int acknowledgementNumber;
+	private byte flags = 0;
+	private byte[] payload = new byte[]{0};
+	private int sequenceNumber = 0;
+	private int acknowledgementNumber = 0;
+	private Long checksum = null;
 	
 	/*
 	 * Flags
@@ -17,12 +18,12 @@ public class Package {
 	 */
 	
 	public Package(byte[] paket) throws Exception {
-		long checksum = paket[9] << 56 + paket[10] << 48 + paket[11] << 40 + paket[12] << 32
+		checksum = paket[9] << 56 + paket[10] << 48 + paket[11] << 40 + paket[12] << 32
 				+ paket[13] << 24 + paket[14] << 16 + paket[15] << 8 + paket[16];
 	    Adler32 chinese = new Adler32();
 		chinese.update(paket, 0, 17);
 		chinese.update(paket, 17, paket.length - 17);
-		if (checksum != chinese.getValue()) {
+		if (checksum.compareTo(chinese.getValue())) {
 			throw new Exception("Packagee defect");
 		}
 		this.sequenceNumber = paket[0] << 24 + paket[1] << 16 + paket[2] << 8 + paket[3];
@@ -51,7 +52,7 @@ public class Package {
 	    Adler32 chinese = new Adler32();
 		chinese.update(paket, 0, 17);
 		chinese.update(paket, 17, paket.length - 17);
-		long checksum = chinese.getValue();
+		checksum = chinese.getValue();
 	    paket[9] = (byte) (checksum >> 56);
 	    paket[10] = (byte) (checksum >> 48);
 	    paket[11] = (byte) (checksum >> 40);
@@ -118,5 +119,41 @@ public class Package {
 
 	public void setAcknowledgementNumber(int acknowledgementNumber) {
 		this.acknowledgementNumber = acknowledgementNumber;
+	}
+
+	private Long getChecksum() {
+		byte[] paket = new byte[payload.length + 17];
+	    paket[0] = (byte) (this.sequenceNumber >> 24);
+	    paket[1] = (byte) (this.sequenceNumber >> 16);
+	    paket[2] = (byte) (this.sequenceNumber >> 8);
+	    paket[3] = (byte) this.sequenceNumber;
+	    paket[4] = (byte) (this.acknowledgementNumber >> 24);
+	    paket[5] = (byte) (this.acknowledgementNumber >> 16);
+	    paket[6] = (byte) (this.acknowledgementNumber >> 8);
+	    paket[7] = (byte) this.acknowledgementNumber;
+		paket[8] = this.flags;
+		System.arraycopy(this.payload, 0, paket, 17, this.payload.length);
+	    Adler32 chinese = new Adler32();
+		chinese.update(paket, 0, 17);
+		chinese.update(paket, 17, paket.length - 17);
+		checksum = chinese.getValue();
+		return checksum;
+	}
+
+	@Override
+	public int hashCode() {
+			return (int) getChecksum;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other == null) {
+			return false;
+		}
+		if (other.getClass() != getClass()) {
+			return false;
+		}
+
+		return ((Package)other).getChecksum().compareTo(getChecksum());
 	}
 }

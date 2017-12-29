@@ -26,8 +26,6 @@ public class FileSender {
 	private static List<FileSendTask> window = new ArrayList<>();
 	private static DatagramSocket dgs;
 	
-	private static Lock lock = new ReentrantLock();
-	
 	public static void main(String[] args) {
 		byte[] paket = new byte[PACKET_SIZE];
 		int sequence = (int) (Math.random() * Integer.MAX_VALUE);
@@ -57,9 +55,9 @@ public class FileSender {
 					p.setSequenceNumber(sequence);
 					FileSendTask fst = new FileSendTask(p, dgs);
 					t.schedule(fst, 0, TIMEOUT);
-					lock.lock();
-					window.add(fst);
-					lock.unlock();
+					synchronized(window) {
+						window.add(fst);
+					}
 				}
 			}
 		} catch (IOException | InterruptedException e) {
@@ -83,22 +81,8 @@ public class FileSender {
 				}
 				
 				if (pit.isACK()) {
-					if (pit.isFACK()) {
-						List<FileSendTask> fstl = new ArrayList<>(); 
-						lock.lock();
-						for (int i = -1; i < window.size(); ++i) {
-							FileSendTask f = window.get(i);
-							if (f.seq() < pit.getSequenceNumber()) {
-								fstl.add(f);
-							} if (f.seq() == pit.getSequenceNumber()) {
-								fstl.add(f);
-								break;
-							} else {
-								break;
-							}
-						}
-					} else {
-						
+					synchronized(window) {
+						window.stream().filter(x -> x.seq == pit.getSequenceNumber()).peek(x -> x.close()).foreach(x -> window.remove(x));
 					}
 				}
 			}
