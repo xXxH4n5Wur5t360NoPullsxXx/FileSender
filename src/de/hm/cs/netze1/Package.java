@@ -18,13 +18,13 @@ public class Package {
 	 */
 	
 	public Package(byte[] paket) throws Exception {
-		checksum = paket[9] << 56 + paket[10] << 48 + paket[11] << 40 + paket[12] << 32
-				+ paket[13] << 24 + paket[14] << 16 + paket[15] << 8 + paket[16];
+		checksum = (long) paket[9] << 56L + (long) paket[10] << 48L + (long) paket[11] << 40L + (long) paket[12] << 32L
+				+ (long) paket[13] << 24L + (long) paket[14] << 16L + (long) paket[15] << 8L + (long) paket[16];
 	    Adler32 chinese = new Adler32();
 		chinese.update(paket, 0, 17);
 		chinese.update(paket, 17, paket.length - 17);
-		if (checksum.compareTo(chinese.getValue())) {
-			throw new Exception("Packagee defect");
+		if (checksum.compareTo(chinese.getValue()) == 0) {
+			throw new Exception("Package defect");
 		}
 		this.sequenceNumber = paket[0] << 24 + paket[1] << 16 + paket[2] << 8 + paket[3];
 		this.acknowledgementNumber = paket[4] << 24 + paket[5] << 16 + paket[6] << 8 + paket[7];
@@ -53,14 +53,14 @@ public class Package {
 		chinese.update(paket, 0, 17);
 		chinese.update(paket, 17, paket.length - 17);
 		checksum = chinese.getValue();
-	    paket[9] = (byte) (checksum >> 56);
-	    paket[10] = (byte) (checksum >> 48);
-	    paket[11] = (byte) (checksum >> 40);
-	    paket[12] = (byte) (checksum >> 32);
-	    paket[13] = (byte) (checksum >> 24);
-	    paket[14] = (byte) (checksum >> 16);
-	    paket[15] = (byte) (checksum >> 8);
-	    paket[16] = (byte) checksum;
+	    paket[9] = (byte) (checksum >> 56L);
+	    paket[10] = (byte) (checksum >> 48L);
+	    paket[11] = (byte) (checksum >> 40L);
+	    paket[12] = (byte) (checksum >> 32L);
+	    paket[13] = (byte) (checksum >> 24L);
+	    paket[14] = (byte) (checksum >> 16L);
+	    paket[15] = (byte) (checksum >> 8L);
+	    paket[16] = (byte) (checksum >> 0L);
 		return paket;
 	}
 	
@@ -142,7 +142,7 @@ public class Package {
 
 	@Override
 	public int hashCode() {
-			return (int) getChecksum;
+			return (int) (getChecksum() << 0L);
 	}
 
 	@Override
@@ -154,6 +154,6 @@ public class Package {
 			return false;
 		}
 
-		return ((Package)other).getChecksum().compareTo(getChecksum());
+		return ((Package)other).getChecksum().compareTo(getChecksum()) == 0;
 	}
 }
