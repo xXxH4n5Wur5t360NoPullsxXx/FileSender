@@ -18,16 +18,16 @@ public class Package {
 	 */
 	
 	public Package(byte[] paket) throws Exception {
-		checksum = (long) paket[9] << 56L + (long) paket[10] << 48L + (long) paket[11] << 40L + (long) paket[12] << 32L
-				+ (long) paket[13] << 24L + (long) paket[14] << 16L + (long) paket[15] << 8L + (long) paket[16];
+		checksum = ((long) paket[9] << 56) + ((long) paket[10] << 48) + ((long) paket[11] << 40) + ((long) paket[12] << 32)
+				+ ((long) paket[13] << 24) + ((long) paket[14] << 16) + ((long) paket[15] << 8) + (long) paket[16];
 	    Adler32 chinese = new Adler32();
-		chinese.update(paket, 0, 17);
+		chinese.update(paket, 0, 9);
 		chinese.update(paket, 17, paket.length - 17);
-		if (checksum.compareTo(chinese.getValue()) == 0) {
+		if (checksum.compareTo(chinese.getValue()) != 0) {
 			throw new Exception("Package defect");
 		}
-		this.sequenceNumber = paket[0] << 24 + paket[1] << 16 + paket[2] << 8 + paket[3];
-		this.acknowledgementNumber = paket[4] << 24 + paket[5] << 16 + paket[6] << 8 + paket[7];
+		this.sequenceNumber = (paket[0] << 24) + (paket[1] << 16) + (paket[2] << 8) + paket[3];
+		this.acknowledgementNumber = (paket[4] << 24) + (paket[5] << 16) + (paket[6] << 8) + paket[7];
 		this.flags = paket[8];
 		this.payload = new byte[paket.length - 17];
 		System.arraycopy(paket, 17, this.payload, 0, this.payload.length);
@@ -39,28 +39,28 @@ public class Package {
 	
 	public byte[] makePaket() {
 		byte[] paket = new byte[payload.length + 17];
-	    paket[0] = (byte) (this.sequenceNumber >> 24);
-	    paket[1] = (byte) (this.sequenceNumber >> 16);
-	    paket[2] = (byte) (this.sequenceNumber >> 8);
-	    paket[3] = (byte) this.sequenceNumber;
-	    paket[4] = (byte) (this.acknowledgementNumber >> 24);
-	    paket[5] = (byte) (this.acknowledgementNumber >> 16);
-	    paket[6] = (byte) (this.acknowledgementNumber >> 8);
-	    paket[7] = (byte) this.acknowledgementNumber;
+	  paket[0] = (byte) (this.sequenceNumber >> 24);
+	  paket[1] = (byte) (this.sequenceNumber >> 16);
+	  paket[2] = (byte) (this.sequenceNumber >> 8);
+	  paket[3] = (byte) this.sequenceNumber;
+	  paket[4] = (byte) (this.acknowledgementNumber >> 24);
+	  paket[5] = (byte) (this.acknowledgementNumber >> 16);
+	  paket[6] = (byte) (this.acknowledgementNumber >> 8);
+	  paket[7] = (byte) this.acknowledgementNumber;
 		paket[8] = this.flags;
 		System.arraycopy(this.payload, 0, paket, 17, this.payload.length);
-	    Adler32 chinese = new Adler32();
-		chinese.update(paket, 0, 17);
+	  Adler32 chinese = new Adler32();
+		chinese.update(paket, 0, 9);
 		chinese.update(paket, 17, paket.length - 17);
 		checksum = chinese.getValue();
-	    paket[9] = (byte) (checksum >> 56L);
-	    paket[10] = (byte) (checksum >> 48L);
-	    paket[11] = (byte) (checksum >> 40L);
-	    paket[12] = (byte) (checksum >> 32L);
-	    paket[13] = (byte) (checksum >> 24L);
-	    paket[14] = (byte) (checksum >> 16L);
-	    paket[15] = (byte) (checksum >> 8L);
-	    paket[16] = (byte) (checksum >> 0L);
+	  paket[9] = (byte) (checksum >> 56L);
+	  paket[10] = (byte) (checksum >> 48L);
+	  paket[11] = (byte) (checksum >> 40L);
+	  paket[12] = (byte) (checksum >> 32L);
+	  paket[13] = (byte) (checksum >> 24L);
+	  paket[14] = (byte) (checksum >> 16L);
+	  paket[15] = (byte) (checksum >> 8L);
+	  paket[16] = (byte) (checksum >> 0L);
 		return paket;
 	}
 	
@@ -122,7 +122,7 @@ public class Package {
 	}
 
 	private Long getChecksum() {
-		byte[] paket = new byte[payload.length + 17];
+		byte[] paket = new byte[payload.length + 9];
 	    paket[0] = (byte) (this.sequenceNumber >> 24);
 	    paket[1] = (byte) (this.sequenceNumber >> 16);
 	    paket[2] = (byte) (this.sequenceNumber >> 8);
@@ -132,12 +132,10 @@ public class Package {
 	    paket[6] = (byte) (this.acknowledgementNumber >> 8);
 	    paket[7] = (byte) this.acknowledgementNumber;
 		paket[8] = this.flags;
-		System.arraycopy(this.payload, 0, paket, 17, this.payload.length);
+		System.arraycopy(this.payload, 0, paket, 9, this.payload.length);
 	    Adler32 chinese = new Adler32();
-		chinese.update(paket, 0, 17);
-		chinese.update(paket, 17, paket.length - 17);
-		checksum = chinese.getValue();
-		return checksum;
+		chinese.update(paket, 0, paket.length);
+		return chinese.getValue();
 	}
 
 	@Override
