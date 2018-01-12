@@ -96,7 +96,7 @@ public class FileSender {
       e.printStackTrace();
     }
 
-    System.exit(0);
+    dgs.close();
   }
 
   private static void ackReceiver() {

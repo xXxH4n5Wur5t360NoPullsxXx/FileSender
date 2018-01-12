@@ -45,7 +45,7 @@ public class FileSenderTest {
       }
     }.start();
 
-    FileSender.main(new String[] {"C:\\f910871680_ftyp.mov", "127.0.0.1", "2000", "0", "0"});
+    FileSender.main(new String[] {"src\\de\\hm\\cs\\netze1\\FileSender.java", "127.0.0.1", "2000", "0", "0"});
 
   }
 }
