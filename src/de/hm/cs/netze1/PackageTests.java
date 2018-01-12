@@ -30,6 +30,16 @@ public class PackageTests {
     Package p2 = new Package(p.makePaket());
 
     assertTrue(p.equals(p2));
+
+    p.setPayload(new byte[0], 0);
+    p2 = new Package(p.makePaket());
+
+    assertTrue(p.equals(p2));
+
+    p.setPayload(new byte[] {1}, 1);
+    p2 = new Package(p.makePaket());
+
+    assertTrue(p.equals(p2));
   }
 
 }
