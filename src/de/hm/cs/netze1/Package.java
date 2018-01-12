@@ -32,8 +32,14 @@ public class Package {
     if (checksum.compareTo(chinese.getValue()) != 0) {
       throw new Exception("Package defect");
     }
-    this.sequenceNumber = (paket[0] << 24) | (paket[1] << 16) | (paket[2] << 8) | paket[3];
-    this.acknowledgementNumber = (paket[4] << 24) | (paket[5] << 16) | (paket[6] << 8) | paket[7];
+    this.sequenceNumber = ((paket[0] << 24) & 0xFF000000)
+        | ((paket[1] << 16) & 0xFF0000)
+        | ((paket[2] << 8) & 0xFF00)
+        | (paket[3] & 0xFF);
+    this.acknowledgementNumber = ((paket[4] << 24) & 0xFF000000)
+        | ((paket[5] << 16) & 0xFF0000)
+        | ((paket[6] << 8) & 0xFF00)
+        | (paket[7] & 0xFF);
     this.flags = paket[8];
     this.payload = new byte[paket.length - 17];
     System.arraycopy(paket, 17, this.payload, 0, this.payload.length);

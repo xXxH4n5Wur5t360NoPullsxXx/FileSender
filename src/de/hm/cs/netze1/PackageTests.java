@@ -32,6 +32,8 @@ public class PackageTests {
     assertTrue(p.equals(p2));
 
     p.setPayload(new byte[0], 0);
+    p.setSequenceNumber(-16909320);
+    p.setAcknowledgementNumber(-134480385);
     p2 = new Package(p.makePaket());
 
     assertTrue(p.equals(p2));
