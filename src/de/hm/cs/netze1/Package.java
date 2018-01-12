@@ -18,29 +18,28 @@ public class Package {
 	 */
 
   public Package(byte[] paket) throws Exception {
-    checksum = (((paket[9] | 0x0L) << 56) & 0xFF00000000000000L)
-        | (((paket[10] | 0x0L) << 48) & 0xFF000000000000L)
-        | (((paket[11] | 0x0L) << 40) & 0xFF0000000000L)
-        | (((paket[12] | 0x0L) << 32) & 0xFF00000000L)
-        | (((paket[13] | 0x0L) << 24) & 0xFF000000L)
-        | (((paket[14] | 0x0L) << 16) & 0xFF0000L)
-        | (((paket[15] | 0x0L) <<  8) & 0xFF00L)
-        | ((paket[16] | 0x0L) & 0xFFL);
+    checksum = (((paket[0] | 0x0L) << 56) & 0xFF00000000000000L)
+        | (((paket[1] | 0x0L) << 48) & 0xFF000000000000L)
+        | (((paket[2] | 0x0L) << 40) & 0xFF0000000000L)
+        | (((paket[3] | 0x0L) << 32) & 0xFF00000000L)
+        | (((paket[4] | 0x0L) << 24) & 0xFF000000L)
+        | (((paket[5] | 0x0L) << 16) & 0xFF0000L)
+        | (((paket[6] | 0x0L) <<  8) & 0xFF00L)
+        | ((paket[7] | 0x0L) & 0xFFL);
     Adler32 chinese = new Adler32();
-    chinese.update(paket, 0, 9);
-    chinese.update(paket, 17, paket.length - 17);
+    chinese.update(paket, 8, paket.length - 8);
     if (checksum.compareTo(chinese.getValue()) != 0) {
       throw new Exception("Package defect");
     }
-    this.sequenceNumber = ((paket[0] << 24) & 0xFF000000)
-        | ((paket[1] << 16) & 0xFF0000)
-        | ((paket[2] << 8) & 0xFF00)
-        | (paket[3] & 0xFF);
-    this.acknowledgementNumber = ((paket[4] << 24) & 0xFF000000)
-        | ((paket[5] << 16) & 0xFF0000)
-        | ((paket[6] << 8) & 0xFF00)
-        | (paket[7] & 0xFF);
-    this.flags = paket[8];
+    this.sequenceNumber = ((paket[8] << 24) & 0xFF000000)
+        | ((paket[9] << 16) & 0xFF0000)
+        | ((paket[10] << 8) & 0xFF00)
+        | (paket[11] & 0xFF);
+    this.acknowledgementNumber = ((paket[12] << 24) & 0xFF000000)
+        | ((paket[13] << 16) & 0xFF0000)
+        | ((paket[14] << 8) & 0xFF00)
+        | (paket[15] & 0xFF);
+    this.flags = paket[16];
     this.payload = new byte[paket.length - 17];
     System.arraycopy(paket, 17, this.payload, 0, this.payload.length);
   }
@@ -51,28 +50,27 @@ public class Package {
 
   public byte[] makePaket() {
     byte[] paket = new byte[payload.length + 17];
-    paket[0] = (byte) (this.sequenceNumber >> 24);
-    paket[1] = (byte) (this.sequenceNumber >> 16);
-    paket[2] = (byte) (this.sequenceNumber >> 8);
-    paket[3] = (byte) this.sequenceNumber;
-    paket[4] = (byte) (this.acknowledgementNumber >> 24);
-    paket[5] = (byte) (this.acknowledgementNumber >> 16);
-    paket[6] = (byte) (this.acknowledgementNumber >> 8);
-    paket[7] = (byte) this.acknowledgementNumber;
-    paket[8] = this.flags;
+    paket[8] = (byte) (this.sequenceNumber >> 24);
+    paket[9] = (byte) (this.sequenceNumber >> 16);
+    paket[10] = (byte) (this.sequenceNumber >> 8);
+    paket[11] = (byte) this.sequenceNumber;
+    paket[12] = (byte) (this.acknowledgementNumber >> 24);
+    paket[13] = (byte) (this.acknowledgementNumber >> 16);
+    paket[14] = (byte) (this.acknowledgementNumber >> 8);
+    paket[15] = (byte) this.acknowledgementNumber;
+    paket[16] = this.flags;
     System.arraycopy(this.payload, 0, paket, 17, this.payload.length);
     Adler32 chinese = new Adler32();
-    chinese.update(paket, 0, 9);
-    chinese.update(paket, 17, paket.length - 17);
+    chinese.update(paket, 8,paket.length - 8);
     checksum = chinese.getValue();
-    paket[9] = (byte) (checksum >> 56L);
-    paket[10] = (byte) (checksum >> 48L);
-    paket[11] = (byte) (checksum >> 40L);
-    paket[12] = (byte) (checksum >> 32L);
-    paket[13] = (byte) (checksum >> 24L);
-    paket[14] = (byte) (checksum >> 16L);
-    paket[15] = (byte) (checksum >> 8L);
-    paket[16] = (byte) (checksum >> 0L);
+    paket[0] = (byte) (checksum >> 56L);
+    paket[1] = (byte) (checksum >> 48L);
+    paket[2] = (byte) (checksum >> 40L);
+    paket[3] = (byte) (checksum >> 32L);
+    paket[4] = (byte) (checksum >> 24L);
+    paket[5] = (byte) (checksum >> 16L);
+    paket[6] = (byte) (checksum >> 8L);
+    paket[7] = (byte) (checksum >> 0L);
     return paket;
   }
 
