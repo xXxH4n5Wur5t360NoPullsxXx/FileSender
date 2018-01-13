@@ -135,6 +135,7 @@ public class FileSender {
           pit = new Package(input);
         } catch (SocketTimeoutException e) {
           System.out.println("Fuck you, fuck you and fuck you all, I AM SOCK OF THIS SHIT, I AM OUTTA HERE");
+          System.exit(-1);
           return;
         } catch (Exception e) {
           continue;
