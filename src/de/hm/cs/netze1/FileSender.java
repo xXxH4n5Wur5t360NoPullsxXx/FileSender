@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public class FileSender {
 
   private static final int PACKET_SIZE = 1400;
   private static final int TIMEOUT = 10;
+  private static final int TERMINATE_TIMEOUT = 10000;
   private static final int MAX_WINDOW_SIZE = 50;
   private static AtomicBoolean running = new AtomicBoolean(true);
 
@@ -42,6 +44,7 @@ public class FileSender {
     Timer t = new Timer();
     try {
       dgs = new BadDatagramSocket(Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+      dgs.setSoTimeout(TERMINATE_TIMEOUT);
     } catch (Exception e) {
       e.printStackTrace();
       return;
@@ -52,8 +55,28 @@ public class FileSender {
     try (FileInputStream reader = new FileInputStream(args[0])){
       FileSendTask fst;
       Package p = new Package();
+      p.setSYN(true);
+      p.setSequenceNumber(sequence);
       p.setACK(false);
       p.setFIN(false);
+
+      fst = new FileSendTask(p, dgs, ip, port);
+      synchronized(window) {
+        window.add(fst);
+      }
+      t.schedule(fst, 0, TIMEOUT);
+      sequence++;
+
+      p.setSYN(false);
+
+      synchronized (window) {
+        window.wait(TERMINATE_TIMEOUT);
+      }
+
+      if (!window.isEmpty()) {
+        System.exit(-1);
+      }
+
       while (readCount != -1) {
         synchronized (window) {
           while (window.size() >= MAX_WINDOW_SIZE) {
@@ -110,6 +133,9 @@ public class FileSender {
           byte[] input = new byte[p.getLength()];
           System.arraycopy(p.getData(), p.getOffset(), input, 0, p.getLength());
           pit = new Package(input);
+        } catch (SocketTimeoutException e) {
+          System.out.println("Fuck you, fuck you and fuck you all, I AM SOCK OF THIS SHIT, I AM OUTTA HERE");
+          return;
         } catch (Exception e) {
           continue;
         }
@@ -122,7 +148,7 @@ public class FileSender {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println("Stopped waiting for packages");
     }
   }
 }
