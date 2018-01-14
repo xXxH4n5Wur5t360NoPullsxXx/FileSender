@@ -120,6 +120,7 @@ public class FileSender {
     }
 
     dgs.close();
+    t.cancel();
   }
 
   private static void ackReceiver() {
