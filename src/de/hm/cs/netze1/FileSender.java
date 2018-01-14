@@ -32,7 +32,7 @@ public class FileSender {
    * 4 Corruption rate
    */
   public static void main(String[] args) {
-    byte[] paket = new byte[PACKET_SIZE - 50];
+    byte[] paket;
     int sequence = (int) (Math.random() * Integer.MAX_VALUE);
     int readCount = 0;
 
@@ -77,12 +77,15 @@ public class FileSender {
         System.exit(-1);
       }
 
+      int lastPackageLength = 0;
+
       while (readCount != -1) {
         synchronized (window) {
           while (window.size() >= MAX_WINDOW_SIZE) {
             window.wait();
           }
         }
+        paket = new byte[PACKET_SIZE - 50];
         readCount = reader.read(paket);
         if (readCount > 0) {
           p.setPayload(paket, readCount);
@@ -93,12 +96,13 @@ public class FileSender {
           }
           t.schedule(fst, 0, TIMEOUT);
           sequence += readCount;
+          lastPackageLength = readCount;
         }
       }
 
       p.setACK(false);
       p.setFIN(true);
-      p.setSequenceNumber(sequence + 1);
+      p.setSequenceNumber((sequence + 1) - lastPackageLength);
       fst = new FileSendTask(p, dgs, ip, port);
       synchronized (window) {
         window.add(fst);

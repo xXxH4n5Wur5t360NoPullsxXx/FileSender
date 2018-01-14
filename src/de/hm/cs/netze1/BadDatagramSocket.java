@@ -11,7 +11,7 @@ public class BadDatagramSocket extends DatagramSocket {
   private final double corruption_rate;
 
   public BadDatagramSocket(Double loss_rate, Double corruption_rate) throws SocketException {
-    super(2300);
+    super();
     this.corruption_rate = corruption_rate;
     this.loss_rate = loss_rate;
   }

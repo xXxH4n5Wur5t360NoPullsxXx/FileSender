@@ -37,7 +37,7 @@ public class FileSenderTest {
             returnThis.setAcknowledgementNumber(paket.getSequenceNumber());
             byte[] bytep = returnThis.makePaket();
             DatagramPacket dgp = new DatagramPacket(bytep, bytep.length);
-            dgp.setPort(2300);
+            dgp.setPort(p.getPort());
             dgp.setAddress(InetAddress.getLoopbackAddress());
             socket.send(dgp);
           }
@@ -45,7 +45,7 @@ public class FileSenderTest {
       }
     }.start();
 
-    FileSender.main(new String[] {"src\\de\\hm\\cs\\netze1\\FileSender.java", "127.0.0.1", "2000", "0", "0.9"});
+    FileSender.main(new String[] {"src\\de\\hm\\cs\\netze1\\FileSender.java", "127.0.0.1", "2000", "0.9", "0.9"});
 
   }
 }

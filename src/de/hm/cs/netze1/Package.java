@@ -107,7 +107,7 @@ public class Package {
   }
 
   public void setPayload(byte[] payload, int length) {
-    this.payload = new byte[payload.length];
+    this.payload = new byte[length];
     System.arraycopy(payload, 0, this.payload, 0, length);
   }
 
