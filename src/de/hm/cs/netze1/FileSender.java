@@ -11,15 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+/*
+  Neumann
+ */
 public class FileSender {
 
   private static final int PACKET_SIZE = 1400;
   private static final int TIMEOUT = 10;
-  private static final int TERMINATE_TIMEOUT = 10000;
-  private static final int MAX_WINDOW_SIZE = 50;
-  private static AtomicBoolean running = new AtomicBoolean(true);
+  private static final int TERMINATE_TIMEOUT = 30000;
+  private static final int MAX_WINDOW_SIZE = 1;
 
   private static List<FileSendTask> window = new ArrayList<>();
   private static DatagramSocket dgs;
@@ -32,9 +33,10 @@ public class FileSender {
    * 4 Corruption rate
    */
   public static void main(String[] args) {
-    byte[] paket;
-    int sequence = (int) (Math.random() * Integer.MAX_VALUE);
+    byte[] paket = new byte[PACKET_SIZE - 50];
+    int sequence =  (int) (Math.random() * Integer.MAX_VALUE);
     int readCount = 0;
+    int bytesSend = sequence;
 
     String ip = args[1];
     int port = Integer.parseInt(args[2]);
@@ -85,7 +87,6 @@ public class FileSender {
             window.wait();
           }
         }
-        paket = new byte[PACKET_SIZE - 50];
         readCount = reader.read(paket);
         if (readCount > 0) {
           p.setPayload(paket, readCount);
@@ -96,13 +97,15 @@ public class FileSender {
           }
           t.schedule(fst, 0, TIMEOUT);
           sequence += readCount;
-          lastPackageLength = readCount;
+          lastPackageLength++;
+          bytesSend += p.getPayload().length;
         }
       }
 
       p.setACK(false);
       p.setFIN(true);
-      p.setSequenceNumber((sequence + 1) - lastPackageLength);
+      p.setSequenceNumber((sequence + 1));
+      p.setPayload(new byte[] {0}, 1);
       fst = new FileSendTask(p, dgs, ip, port);
       synchronized (window) {
         window.add(fst);

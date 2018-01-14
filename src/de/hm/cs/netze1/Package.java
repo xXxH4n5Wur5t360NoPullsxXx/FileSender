@@ -2,6 +2,9 @@ package de.hm.cs.netze1;
 
 import java.util.zip.Adler32;
 
+/*
+  Neumann
+ */
 public class Package {
   private byte flags = 0;
   private byte[] payload = new byte[]{0};
@@ -162,6 +165,6 @@ public class Package {
       return false;
     }
 
-    return ((Package)other).getChecksum().compareTo(getChecksum()) == 0;
+    return ((Package)other).getChecksum().compareTo(getChecksum()) == 0 && ((Package)other).getSequenceNumber() == sequenceNumber;
   }
 }
