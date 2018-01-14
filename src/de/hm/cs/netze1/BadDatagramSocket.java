@@ -7,10 +7,10 @@ import java.net.SocketException;
 
 public class BadDatagramSocket extends DatagramSocket {
 
-  private final int loss_rate;
-  private final int corruption_rate;
+  private final double loss_rate;
+  private final double corruption_rate;
 
-  public BadDatagramSocket(int loss_rate, int corruption_rate) throws SocketException {
+  public BadDatagramSocket(Double loss_rate, Double corruption_rate) throws SocketException {
     super(2300);
     this.corruption_rate = corruption_rate;
     this.loss_rate = loss_rate;
@@ -28,7 +28,7 @@ public class BadDatagramSocket extends DatagramSocket {
         int ran = (int) (Math.random() * bad.length);
         bad[ran] = (byte) (bad[ran] | ran);
       }
-      p.setData(bad);
+      p = new DatagramPacket(bad, bad.length, p.getSocketAddress());
     }
 
     super.send(p);

@@ -43,7 +43,7 @@ public class FileSender {
 
     Timer t = new Timer();
     try {
-      dgs = new BadDatagramSocket(Integer.parseInt(args[3]), Integer.parseInt(args[4]));
+      dgs = new BadDatagramSocket(Double.parseDouble(args[3]), Double.parseDouble(args[4]));
       dgs.setSoTimeout(TERMINATE_TIMEOUT);
     } catch (Exception e) {
       e.printStackTrace();
@@ -124,9 +124,8 @@ public class FileSender {
   }
 
   private static void ackReceiver() {
-    boolean running = true;
     try {
-      while (running) {
+      while (true) {
         DatagramPacket p = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
         dgs.receive(p);
         Package pit;
@@ -134,11 +133,7 @@ public class FileSender {
           byte[] input = new byte[p.getLength()];
           System.arraycopy(p.getData(), p.getOffset(), input, 0, p.getLength());
           pit = new Package(input);
-        } catch (SocketTimeoutException e) {
-          System.out.println("Fuck you, fuck you and fuck you all, I AM SOCK OF THIS SHIT, I AM OUTTA HERE");
-          System.exit(-1);
-          return;
-        } catch (Exception e) {
+        }  catch (Exception e) {
           continue;
         }
         if (pit.isACK()) {
@@ -149,6 +144,10 @@ public class FileSender {
           }
         }
       }
+    } catch (SocketTimeoutException e) {
+      System.out.println("Fuck you, fuck you and fuck you all, I AM SOCK OF THIS SHIT, I AM OUTTA HERE");
+      System.exit(-1);
+      return;
     } catch (Exception e) {
       System.out.println("Stopped waiting for packages");
     }
