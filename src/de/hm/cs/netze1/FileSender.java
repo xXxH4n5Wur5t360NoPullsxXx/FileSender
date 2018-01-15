@@ -1,5 +1,6 @@
 package de.hm.cs.netze1;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -28,13 +29,12 @@ public class FileSender {
   /**
    * 0 File
    * 1 Ip
-   * 2 Port
    * 3 Loss rate
    * 4 Corruption rate
    */
   public static void main(String[] args) {
     byte[] paket = new byte[PACKET_SIZE - 50];
-    int sequence =  (int) (Math.random() * Integer.MAX_VALUE);
+    int sequence =  Integer.MAX_VALUE - 100; // 1345229758; //(int) (Math.random() * Integer.MAX_VALUE);
     int readCount = 0;
     int bytesSend = sequence;
 
@@ -61,8 +61,9 @@ public class FileSender {
       p.setSequenceNumber(sequence);
       p.setACK(false);
       p.setFIN(false);
+      p.setPayload(new File(args[0]).getName().getBytes(), new File(args[0]).getName().getBytes().length);
 
-      fst = new FileSendTask(p, dgs, ip, port);
+      fst = new FileSendTask(p, dgs, ip, 9521);
       synchronized(window) {
         window.add(fst);
       }
@@ -78,8 +79,6 @@ public class FileSender {
       if (!window.isEmpty()) {
         System.exit(-1);
       }
-
-      int lastPackageLength = 0;
 
       while (readCount != -1) {
         synchronized (window) {
@@ -97,7 +96,6 @@ public class FileSender {
           }
           t.schedule(fst, 0, TIMEOUT);
           sequence += readCount;
-          lastPackageLength++;
           bytesSend += p.getPayload().length;
         }
       }
