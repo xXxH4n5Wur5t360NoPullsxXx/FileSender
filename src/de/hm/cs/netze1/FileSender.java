@@ -21,7 +21,7 @@ public class FileSender {
   private static final int PACKET_SIZE = 1400;
   private static final int TIMEOUT = 10;
   private static final int TERMINATE_TIMEOUT = 30000;
-  private static final int MAX_WINDOW_SIZE = 1;
+  private static final int MAX_WINDOW_SIZE = 50;
 
   private static List<FileSendTask> window = new ArrayList<>();
   private static DatagramSocket dgs;
@@ -34,7 +34,7 @@ public class FileSender {
    */
   public static void main(String[] args) {
     byte[] paket = new byte[PACKET_SIZE - 50];
-    int sequence =  Integer.MAX_VALUE - 100; // 1345229758; //(int) (Math.random() * Integer.MAX_VALUE);
+    int sequence = (int) (Math.random() * Integer.MAX_VALUE);
     int readCount = 0;
     int bytesSend = sequence;
 
@@ -68,7 +68,7 @@ public class FileSender {
         window.add(fst);
       }
       t.schedule(fst, 0, TIMEOUT);
-      sequence++;
+      sequence +=  1;
 
       p.setSYN(false);
 
@@ -90,7 +90,7 @@ public class FileSender {
         if (readCount > 0) {
           p.setPayload(paket, readCount);
           p.setSequenceNumber(sequence);
-          fst = new FileSendTask(p, dgs, ip, port);
+          fst = new FileSendTask(p, dgs, ip, 9521);
           synchronized(window) {
             window.add(fst);
           }
@@ -104,7 +104,7 @@ public class FileSender {
       p.setFIN(true);
       p.setSequenceNumber((sequence + 1));
       p.setPayload(new byte[] {0}, 1);
-      fst = new FileSendTask(p, dgs, ip, port);
+      fst = new FileSendTask(p, dgs, ip, 9521);
       synchronized (window) {
         window.add(fst);
       }
